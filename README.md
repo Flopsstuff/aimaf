@@ -57,6 +57,10 @@ This app stores configuration in browser `localStorage`:
 
 ### Quick start
 
+Requires Node.js `>=22.23.4` (22.23.4+, 24.22.1+ or newer; Node 18/20 are end-of-life
+and 20 is missing the Brotli-decoder security fix). Yarn comes from Corepack
+(`packageManager` in `package.json`), so no global Yarn install is needed.
+
 1. Install deps
    - `yarn`
 2. Run dev server
