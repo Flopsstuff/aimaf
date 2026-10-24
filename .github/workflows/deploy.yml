@@ -26,6 +26,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+          # Without this the runner reuses its cached 24.x, which lags the
+          # latest patch release and can sit below the security floor.
+          check-latest: true
 
       - name: Enable Corepack
         run: corepack enable
