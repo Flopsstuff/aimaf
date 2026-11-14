@@ -14,6 +14,8 @@ Node.js `>=22.23.4` (`engines` in `package.json`; CI builds on Node 24). Yarn 4 
 - `CI=true yarn test` - run tests once, no watch
 - `CI=true yarn test src/App.test.tsx -t "name"` - single file / single test
 - `yarn serve` - build and serve production locally
+- `yarn preview` - build and serve through `wrangler dev`
+- `yarn deploy` - build and deploy to Cloudflare
 
 There is no lint script: CRA's ESLint (`react-app`, `react-app/jest`) runs inside `start` and `build`.
 
@@ -21,7 +23,11 @@ The only test, `src/App.test.tsx`, is the untouched CRA template and currently f
 
 ## Deployment
 
-Every push to `main` builds and deploys to GitHub Pages (`.github/workflows/deploy.yml`) with `PUBLIC_URL=/aimaf` and `DISABLE_ESLINT_PLUGIN=true`, so lint errors do not block the deploy. The app is served from a subpath, which is why routing uses `HashRouter`; keep asset URLs relative to `PUBLIC_URL`.
+The site is hosted on Cloudflare as a Worker with static assets (`wrangler.jsonc`): Worker `aimaf`, assets from `build/`, custom domain https://aimaf.flopbut.pl. The `workers.dev` address is disabled.
+
+Every push to `main` builds and runs `yarn wrangler deploy` (`.github/workflows/deploy.yml`), which needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. The build runs with `DISABLE_ESLINT_PLUGIN=true`, so lint errors do not block the deploy. `yarn deploy` does the same from a machine logged in with `wrangler login`.
+
+The site lives at the domain root; the public path comes from `homepage` in `package.json`. Routing uses `HashRouter`, so no SPA fallback is configured for assets.
 
 `aimaf.mov` is stored in Git LFS (`.gitattributes`).
 

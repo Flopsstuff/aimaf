@@ -168,3 +168,8 @@ yarn-error.log*
 .playwright-mcp/
 .markdown_vault_mcp/
 **/.markdown_vault_mcp/
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
