@@ -21,8 +21,16 @@ export function Header({ onNext, onRestart, gamePhase, gameState, showBack, disa
   return (
     <header className="header">
       <div className="header-left">
-        <GitHubLogo />
-        <Link to="/" className="header-logo">AIMAF</Link>
+        <Link to="/" className="header-logo">
+          <img
+            src={`${process.env.PUBLIC_URL}/favicon.svg`}
+            alt=""
+            className="header-logo-icon"
+            width="28"
+            height="28"
+          />
+          AIMAF
+        </Link>
       </div>
       {!showBack && (
         <div className="header-center">
@@ -67,6 +75,7 @@ export function Header({ onNext, onRestart, gamePhase, gameState, showBack, disa
             <Link to="/settings" className="header-settings">Settings</Link>
           )
         )}
+        <GitHubLogo />
       </div>
     </header>
   );
