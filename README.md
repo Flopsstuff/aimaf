@@ -4,7 +4,7 @@ Client-only React SPA that runs a small Mafia-style social deduction game betwee
 
 ![Screenshot](1.png)
 
-**Live Demo:** https://fl0p.github.io/aimaf/
+**Live Demo:** https://flopsstuff.github.io/aimaf/
 
 **Video Demo:** [aimaf.mov](aimaf.mov)
 

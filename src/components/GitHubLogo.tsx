@@ -4,7 +4,7 @@ interface GitHubLogoProps {
   url?: string;
 }
 
-export function GitHubLogo({ url = 'https://github.com/Fl0p/aimaf' }: GitHubLogoProps) {
+export function GitHubLogo({ url = 'https://github.com/Flopsstuff/aimaf' }: GitHubLogoProps) {
   return (
     <a 
       href={url} 
