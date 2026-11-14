@@ -62,17 +62,12 @@ export function Settings() {
     setTestResult(null);
 
     try {
-      const response = await fetch(`${OPENROUTER_API_BASE_URL}/chat/completions`, {
-        method: 'POST',
+      // Ask OpenRouter about the key itself: no model is involved, so the
+      // check keeps working when models are retired, and it costs nothing.
+      const response = await fetch(`${OPENROUTER_API_BASE_URL}/key`, {
         headers: {
           'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          model: 'openai/gpt-3.5-turbo',
-          messages: [{ role: 'user', content: 'Say "OK" and nothing else.' }],
-          max_tokens: 10,
-        }),
       });
 
       if (response.ok) {
