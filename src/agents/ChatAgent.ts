@@ -1,9 +1,16 @@
 import { ToolLoopAgent, ModelMessage, ToolSet, tool } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { AgentConfig, Message, MafiaRole, MessageSender, GamePhase, ToolCallData } from '../types';
+import { AgentConfig, Message, MafiaRole, MessageSender, GamePhase, ToolCallData, UsageData } from '../types';
 import { MafiaPrompts } from './MafiaPrompts';
 import { isMafia, generateId } from '../utils/helpers';
 import { z } from 'zod';
+
+// Prompt cache breakpoint. Everything up to and including the marked message is
+// cached by the provider. Anthropic models cache only when asked to; providers
+// that cache automatically (OpenAI, DeepSeek, Grok) ignore the marker.
+const CACHE_BREAKPOINT = {
+  openrouter: { cacheControl: { type: 'ephemeral' as const } },
+};
 
 export class ChatAgent {
   private config: AgentConfig;
@@ -11,6 +18,8 @@ export class ChatAgent {
   private _isDead: boolean = false;
   private currentGamePhase: GamePhase = GamePhase.Welcome;
   private instructions: string;
+  // Index of the last message sent on the previous turn; null before the first turn
+  private previousBreakpointIndex: number | null = null;
 
   constructor(config: AgentConfig, apiKey: string) {
     this.config = config;
@@ -21,7 +30,12 @@ export class ChatAgent {
 
     this.agent = new ToolLoopAgent({
       model: openrouter(this.config.model),
-      instructions: this.instructions,
+      // Breakpoint 1: tool definitions + system prompt, identical on every call
+      instructions: {
+        role: 'system',
+        content: this.instructions,
+        providerOptions: CACHE_BREAKPOINT,
+      },
       tools,
     });
   }
@@ -89,9 +103,24 @@ export class ChatAgent {
     return tools;
   }
 
-  async generate(messages: Message[], allAgentNames: string[], gamePhase: GamePhase): Promise<{ text: string; toolCalls?: ToolCallData[] }> {
+  async generate(messages: Message[], allAgentNames: string[], gamePhase: GamePhase): Promise<{ text: string; toolCalls?: ToolCallData[]; usage?: UsageData }> {
     this.currentGamePhase = gamePhase;
     const modelMessages = this.convertMessages(messages);
+
+    // Breakpoint 2: the end of the history. An agent's view of the log only
+    // grows, so on its next turn everything up to here is read from the cache.
+    const lastIndex = modelMessages.length - 1;
+    this.markCacheBreakpoint(modelMessages, lastIndex);
+
+    // Breakpoint 3: where the history ended on this agent's previous turn.
+    // Providers look back only a limited number of blocks from a breakpoint
+    // (20 for Anthropic), so in a big game the previous cache entry would be
+    // missed without marking its exact position again.
+    if (this.previousBreakpointIndex !== null && this.previousBreakpointIndex < lastIndex) {
+      this.markCacheBreakpoint(modelMessages, this.previousBreakpointIndex);
+    }
+    this.previousBreakpointIndex = lastIndex;
+
     const result = await this.agent.generate({ messages: modelMessages });
     
     const toolCalls: ToolCallData[] = [];
@@ -115,7 +144,41 @@ export class ChatAgent {
     return {
       text: this.fixNames(result.text, allAgentNames),
       toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+      usage: this.collectUsage(result.steps),
     };
+  }
+
+  private markCacheBreakpoint(messages: ModelMessage[], index: number): void {
+    messages[index] = {
+      ...messages[index],
+      providerOptions: CACHE_BREAKPOINT,
+    } as ModelMessage;
+  }
+
+  // Sum the usage OpenRouter reports for every step of the tool loop
+  private collectUsage(steps: ReadonlyArray<{ providerMetadata?: Record<string, any> }> | undefined): UsageData | undefined {
+    if (!steps) {
+      return undefined;
+    }
+
+    const total: UsageData = { inputTokens: 0, cachedTokens: 0, outputTokens: 0 };
+    let reported = false;
+
+    for (const step of steps) {
+      const usage = step.providerMetadata?.openrouter?.usage;
+      if (!usage) {
+        continue;
+      }
+      reported = true;
+      total.inputTokens += usage.promptTokens ?? 0;
+      total.cachedTokens += usage.promptTokensDetails?.cachedTokens ?? 0;
+      total.outputTokens += usage.completionTokens ?? 0;
+      if (typeof usage.cost === 'number') {
+        total.cost = (total.cost ?? 0) + usage.cost;
+      }
+    }
+
+    return reported ? total : undefined;
   }
 
   private fixNames(text: string, allAgentNames: string[]): string {

@@ -32,6 +32,14 @@ export interface ToolCallData {
   args: Record<string, any>;
 }
 
+// Token usage of one agent turn, summed over all steps of the tool loop
+export interface UsageData {
+  inputTokens: number;  // prompt tokens, cached ones included
+  cachedTokens: number; // part of inputTokens that was read from the prompt cache
+  outputTokens: number;
+  cost?: number;        // USD, as reported by OpenRouter
+}
+
 export interface Message {
   sender: MessageSender;
   agentId?: string;
@@ -47,6 +55,7 @@ export interface Message {
     toolName: string;
   };
   executionTime?: number; // execution time in seconds
+  usage?: UsageData; // token usage of the agent turn
 }
 
 export interface ChatMessage extends Message {
@@ -72,4 +81,5 @@ export interface AgentGenerateResult {
   text: string;
   executionTime: number;
   toolCalls?: ToolCallData[];
+  usage?: UsageData;
 }

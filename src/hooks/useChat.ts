@@ -154,6 +154,7 @@ export function useChat() {
         agentName: agent.name,
         content: result.text,
         executionTime: result.executionTime,
+        usage: result.usage,
         toolCalls: result.toolCalls,
       });
 
@@ -399,6 +400,7 @@ export function useChat() {
           agentName: agent.name,
           content: result.text,
           executionTime: result.executionTime,
+          usage: result.usage,
           toolCalls: result.toolCalls,
         });
 
@@ -430,6 +432,7 @@ export function useChat() {
           agentName: agent.name,
           content: result.text,
           executionTime: result.executionTime,
+          usage: result.usage,
           toolCalls: result.toolCalls,
         });
 
@@ -470,6 +473,7 @@ export function useChat() {
           content: result.text,
           mafia: true,
           executionTime: result.executionTime,
+          usage: result.usage,
         });
         // Ignore tool calls during discussion phase
       } catch (error) {
@@ -513,6 +517,7 @@ export function useChat() {
           content: result.text,
           mafia: true,
           executionTime: result.executionTime,
+          usage: result.usage,
           toolCalls: result.toolCalls,
         });
 
@@ -544,6 +549,7 @@ export function useChat() {
           content: result.text,
           pm: true,
           executionTime: result.executionTime,
+          usage: result.usage,
           toolCalls: result.toolCalls,
         });
 
@@ -575,6 +581,7 @@ export function useChat() {
           content: result.text,
           pm: true,
           executionTime: result.executionTime,
+          usage: result.usage,
           toolCalls: result.toolCalls,
         });
 
@@ -610,6 +617,7 @@ export function useChat() {
           agentName: agent.name,
           content: result.text,
           executionTime: result.executionTime,
+          usage: result.usage,
           toolCalls: result.toolCalls,
         });
 
