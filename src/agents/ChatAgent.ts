@@ -2,6 +2,7 @@ import { ToolLoopAgent, ModelMessage, ToolSet, tool } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { AgentConfig, Message, MafiaRole, MessageSender, GamePhase, ToolCallData, UsageData } from '../types';
 import { MafiaPrompts } from './MafiaPrompts';
+import { TOOL_PHASES, isToolAllowed } from '../utils/toolPhases';
 import { isMafia, generateId } from '../utils/helpers';
 import { z } from 'zod';
 import { isReasoningEnabled } from '../constants';
@@ -51,7 +52,8 @@ export class ChatAgent {
     });
   }
 
-  private createToolResponse(action: string, playerName: string, allowedPhases: GamePhase[]): string {
+  private createToolResponse(action: string, playerName: string): string {
+    const allowedPhases = TOOL_PHASES[action] ?? [];
     if (!allowedPhases.includes(this.currentGamePhase)) {
       return `[TOOL:${action}] ERROR: You cannot use this action during ${this.currentGamePhase} phase. Wait for the next phase to use this action. This action is only available during: ${allowedPhases.join(', ')}.`;
     }
@@ -69,7 +71,7 @@ export class ChatAgent {
           playerName: z.string().describe('The name of the player to kill'),
         }),
         execute: async ({ playerName }: { playerName: string }) => {
-          return this.createToolResponse('kill', playerName, [GamePhase.Actions]);
+          return this.createToolResponse('kill', playerName);
         },
       });
     }
@@ -82,7 +84,7 @@ export class ChatAgent {
           playerName: z.string().describe('The name of the player to check'),
         }),
         execute: async ({ playerName }: { playerName: string }) => {
-          return this.createToolResponse('check', playerName, [GamePhase.Actions]);
+          return this.createToolResponse('check', playerName);
         },
       });
     }
@@ -95,7 +97,7 @@ export class ChatAgent {
           playerName: z.string().describe('The name of the player to save'),
         }),
         execute: async ({ playerName }: { playerName: string }) => {
-          return this.createToolResponse('save', playerName, [GamePhase.Actions]);
+          return this.createToolResponse('save', playerName);
         },
       });
     }
@@ -107,7 +109,7 @@ export class ChatAgent {
         playerName: z.string().describe('The name of the player to vote for elimination'),
       }),
       execute: async ({ playerName }: { playerName: string }) => {
-        return this.createToolResponse('vote', playerName, [GamePhase.Voting]);
+        return this.createToolResponse('vote', playerName);
       },
     });
 
@@ -152,7 +154,8 @@ export class ChatAgent {
           if (part.type === 'reasoning' && part.text.trim()) {
             reasoning.push(part.text.trim());
           }
-          if (part.type === 'tool-call') {
+          // A call outside its phase got an error from the tool and has no effect
+          if (part.type === 'tool-call' && isToolAllowed(part.toolName, gamePhase)) {
             toolCalls.push({
               id: part.toolCallId || generateId(),
               tool: part.toolName,
