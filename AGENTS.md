@@ -19,7 +19,7 @@ Node.js `>=22.23.4` (`engines` in `package.json`; CI builds on Node 24). Yarn 4 
 
 There is no lint script: CRA's ESLint (`react-app`, `react-app/jest`) runs inside `start` and `build`.
 
-The only test, `src/App.test.tsx`, is the untouched CRA template and currently fails: Jest cannot resolve `react-router-dom` v7, and the assertion looks for "learn react" text that no longer exists. A failing `yarn test` is not caused by your change.
+`src/utils/colors.test.ts` passes. `src/App.test.tsx` is the untouched CRA template and fails: Jest cannot resolve `react-router-dom` v7, and the assertion looks for "learn react" text that no longer exists. That one failure is not caused by your change.
 
 ## Deployment
 
@@ -61,6 +61,11 @@ One hook owns all game state and is the only orchestrator; `Home` just wires its
 - **Prompt caching**: `generate` marks up to three cache breakpoints (`providerOptions.openrouter.cacheControl`): the system prompt, the last message of the history, and the message the history ended on at this agent's previous turn. It relies on each agent's view of the log being append-only, so anything that reorders or rewrites earlier messages in `convertMessages` breaks the cache. Anthropic models cache only with these markers; providers with automatic caching ignore them.
 - **Usage**: `collectUsage` sums OpenRouter's per-step usage (`providerMetadata.openrouter.usage`) into `UsageData`; it travels on the message next to `executionTime` and is rendered by `MessageHeader`.
 - `MafiaPrompts` builds the system prompt as `root + generalRules + role prompt + optional per-agent instructions`. Defaults live in `DEFAULT_PROMPTS`; a `mafia_prompts` entry in localStorage overrides them entirely. The prompt is built once in the `ChatAgent` constructor, so prompt edits affect only agents created afterwards.
+
+### Agent colors and role icons
+
+- `RoleIcon` draws the role glyph on a round badge in the agent's color; it is shown before the name in agent cards and in message headers. Do not use emoji for roles or statuses.
+- Never use an agent's raw color for text. `utils/colors.ts` computes WCAG contrast: `readableNameColor` darkens a color until it reaches 4.5:1 on the darkest message background, `inkOn` picks dark or light ink for content drawn on top of the color. `colors.test.ts` checks the whole form palette against every bubble background, so update it when adding colors or backgrounds.
 
 ### Rules resolution: `src/utils/`
 

@@ -1,22 +1,7 @@
 import { ChatAgent } from '../agents/ChatAgent';
-import { MafiaRole } from '../types';
+import { RoleIcon } from './RoleIcon';
+import { readableNameColor } from '../utils/colors';
 import './AgentCard.css';
-
-const ROLE_COLORS: Record<MafiaRole, string> = {
-  [MafiaRole.Civilian]: '#e8f5e9',
-  [MafiaRole.Mafia]: '#ffebee',
-  [MafiaRole.Doctor]: '#e3f2fd',
-  [MafiaRole.Detective]: '#fff8e1',
-  [MafiaRole.Don]: '#f3e5f5',
-};
-
-const ROLE_EMOJI: Record<MafiaRole, string> = {
-  [MafiaRole.Civilian]: '👤',
-  [MafiaRole.Mafia]: '🕶️',
-  [MafiaRole.Doctor]: '❤️‍🩹',
-  [MafiaRole.Detective]: '🔍',
-  [MafiaRole.Don]: '🎩',
-};
 
 interface AgentCardProps {
   agent: ChatAgent;
@@ -29,19 +14,21 @@ interface AgentCardProps {
 
 export function AgentCard({ agent, isActive, disabled, onClick, onX, onI }: AgentCardProps) {
   const backgroundColor = '#fff';
-  const statusColor = agent.isDead ? '⚫' : (isActive ? '🔵' : '🟢');
+  const status = agent.isDead ? 'dead' : (isActive ? 'active' : 'alive');
 
   return (
     <div
-      className={`agent-card ${isActive ? 'active' : ''}`}
+      className={`agent-card ${isActive ? 'active' : ''} ${agent.isDead ? 'dead' : ''}`}
       style={{ borderLeftColor: agent.color, backgroundColor }}
       onClick={() => !disabled && onClick()}
       title={agent.systemPrompt}
     >
       <div className="agent-card-name">
-        <span className="agent-status">{statusColor}</span>
-        <span className="agent-role-emoji">{ROLE_EMOJI[agent.mafiaRole]}</span>
-        {agent.name}
+        <RoleIcon role={agent.mafiaRole} color={agent.color} size={24} dead={agent.isDead} />
+        <span className="agent-card-name-text" style={{ color: readableNameColor(agent.color) }}>
+          {agent.name}
+        </span>
+        <span className={`agent-status agent-status-${status}`} title={status} />
       </div>
       <div className="agent-card-model">{agent.model}</div>
       <button

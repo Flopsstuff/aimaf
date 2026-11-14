@@ -26,6 +26,11 @@ export function ChatMessages({ messages, agents }: ChatMessagesProps) {
     return agent?.model;
   };
 
+  const getAgentRole = (agentId?: string) => {
+    const agent = agents.find((a) => a.id === agentId);
+    return agent?.mafiaRole;
+  };
+
   return (
     <div className="chat-messages">
       {messages.length === 0 ? (
@@ -40,6 +45,7 @@ export function ChatMessages({ messages, agents }: ChatMessagesProps) {
               message={message}
               agentColor={getAgentColor(message.agentId)}
               agentModel={getAgentModel(message.agentId)}
+              agentRole={getAgentRole(message.agentId)}
             />
           ))
       )}

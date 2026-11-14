@@ -1,10 +1,13 @@
-import { Message, MessageSender, UsageData } from '../types';
+import { MafiaRole, Message, MessageSender, UsageData } from '../types';
+import { RoleIcon } from './RoleIcon';
+import { readableNameColor } from '../utils/colors';
 import './MessageHeader.css';
 
 interface MessageHeaderProps {
   message: Message;
   agentColor: string;
   agentModel?: string;
+  agentRole?: MafiaRole;
 }
 
 // "1.2k in (83% cached) / 45 out, $0.0012"
@@ -17,10 +20,9 @@ function formatUsage(usage: UsageData): string {
   return `${tokens(usage.inputTokens)} in${cached} / ${tokens(usage.outputTokens)} out${cost}`;
 }
 
-export function MessageHeader({ message, agentColor, agentModel }: MessageHeaderProps) {
+export function MessageHeader({ message, agentColor, agentModel, agentRole }: MessageHeaderProps) {
   const isSystem = message.sender === MessageSender.System;
   const isModerator = message.sender === MessageSender.Moderator;
-  const isAgent = message.sender === MessageSender.Agent;
   const isMafia = message.mafia === true;
   const isPrivate = message.pm === true;
   var targetName = 'Public';
@@ -41,22 +43,25 @@ export function MessageHeader({ message, agentColor, agentModel }: MessageHeader
         ) : (
           <div
             className="message-sender-name"
-            style={{ color: isModerator ? '#1976d2' : agentColor }}
+            style={{ color: isModerator ? '#1565c0' : readableNameColor(agentColor) }}
           >
-            {isModerator ? 'Moderator' : message.agentName}
+            {!isModerator && agentRole && (
+              <RoleIcon role={agentRole} color={agentColor} size={20} />
+            )}
+            <span className="message-sender-label">
+              {isModerator ? 'Moderator' : message.agentName}
+            </span>
             {!isModerator && agentModel && (
-              <span style={{ opacity: 0.9, fontWeight: 'normal', marginLeft: '8px' }}>
-                {agentModel}
-              </span>
+              <span className="message-meta">{agentModel}</span>
             )}
             {message.executionTime !== undefined && (
-              <span style={{ opacity: 0.9, fontWeight: 'normal', marginLeft: '8px' }}>
+              <span className="message-meta">
                 thought for {message.executionTime.toFixed(1)}s
               </span>
             )}
             {message.usage && (
               <span
-                className="message-usage"
+                className="message-meta"
                 title="Input tokens (share read from the prompt cache) / output tokens, cost"
               >
                 {formatUsage(message.usage)}

@@ -1,0 +1,9 @@
+.role-icon {
+  display: block;
+  flex-shrink: 0;
+}
+
+.role-icon-dead {
+  filter: grayscale(1);
+  opacity: 0.45;
+}

@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   min-height: 20px;
 }
 
@@ -32,6 +32,8 @@
   line-height: 1.2;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 2px 8px;
 }
 
 .message-sender-name-system {
@@ -39,9 +41,13 @@
   text-align: left;
 }
 
-.message-usage {
-  margin-left: 8px;
+.message-sender-label {
+  font-size: 13px;
+}
+
+/* Model, timing and usage: neutral ink so they stay readable for any agent color */
+.message-meta {
   font-weight: normal;
-  opacity: 0.7;
+  color: rgba(0, 0, 0, 0.62);
   white-space: nowrap;
 }
