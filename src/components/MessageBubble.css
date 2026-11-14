@@ -41,3 +41,24 @@
   background-color: #e0e3e3;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.message-reasoning {
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.message-reasoning summary {
+  cursor: pointer;
+  font-weight: 600;
+  user-select: none;
+}
+
+.message-reasoning-text {
+  margin-top: 6px;
+  padding-left: 10px;
+  border-left: 2px solid rgba(0, 0, 0, 0.2);
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-style: italic;
+}

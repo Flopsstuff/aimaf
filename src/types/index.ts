@@ -56,6 +56,7 @@ export interface Message {
   };
   executionTime?: number; // execution time in seconds
   usage?: UsageData; // token usage of the agent turn
+  reasoning?: string; // the model's reasoning for this turn, when the provider returns it
 }
 
 export interface ChatMessage extends Message {
@@ -82,4 +83,5 @@ export interface AgentGenerateResult {
   executionTime: number;
   toolCalls?: ToolCallData[];
   usage?: UsageData;
+  reasoning?: string;
 }

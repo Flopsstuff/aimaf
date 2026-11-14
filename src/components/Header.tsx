@@ -6,6 +6,7 @@ import './Header.css';
 interface HeaderProps {
   onNext?: () => void;
   onRestart?: () => void;
+  onExport?: () => void;
   gamePhase?: GamePhase;
   gameState?: GameState;
   showBack?: boolean;
@@ -15,7 +16,7 @@ interface HeaderProps {
   onAutoPlayChange?: (enabled: boolean) => void;
 }
 
-export function Header({ onNext, onRestart, gamePhase, gameState, showBack, disableSettings, disableNext, autoPlay, onAutoPlayChange }: HeaderProps) {
+export function Header({ onNext, onRestart, onExport, gamePhase, gameState, showBack, disableSettings, disableNext, autoPlay, onAutoPlayChange }: HeaderProps) {
   const isGameEnded = gameState === GameState.Ended;
   
   return (
@@ -35,12 +36,21 @@ export function Header({ onNext, onRestart, gamePhase, gameState, showBack, disa
       {!showBack && (
         <div className="header-center">
           {isGameEnded ? (
-            <button 
-              className="header-btn header-restart-btn" 
-              onClick={onRestart}
-            >
-              Restart Game
-            </button>
+            <>
+              <button
+                className="header-btn header-export-btn"
+                onClick={onExport}
+                title="Download the whole game as a JSON file"
+              >
+                Export
+              </button>
+              <button
+                className="header-btn header-restart-btn"
+                onClick={onRestart}
+              >
+                Restart Game
+              </button>
+            </>
           ) : (
             <>
               {gamePhase && (

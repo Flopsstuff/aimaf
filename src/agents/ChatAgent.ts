@@ -4,6 +4,7 @@ import { AgentConfig, Message, MafiaRole, MessageSender, GamePhase, ToolCallData
 import { MafiaPrompts } from './MafiaPrompts';
 import { isMafia, generateId } from '../utils/helpers';
 import { z } from 'zod';
+import { isReasoningEnabled } from '../constants';
 
 // Prompt cache breakpoint. Everything up to and including the marked message is
 // cached by the provider. Anthropic models cache only when asked to; providers
@@ -15,6 +16,9 @@ const CACHE_BREAKPOINT = {
 export class ChatAgent {
   private config: AgentConfig;
   private agent: ToolLoopAgent<never, ToolSet>;
+  private apiKey: string;
+  // Whether `agent` was built with reasoning requested
+  private reasoningRequested: boolean;
   private _isDead: boolean = false;
   private currentGamePhase: GamePhase = GamePhase.Welcome;
   private instructions: string;
@@ -24,12 +28,19 @@ export class ChatAgent {
   constructor(config: AgentConfig, apiKey: string) {
     this.config = config;
     this.instructions = MafiaPrompts.getSystemPrompt(this.config.mafiaRole, this.config.systemPrompt);
-    const openrouter = createOpenRouter({ apiKey });
+    this.apiKey = apiKey;
+    this.reasoningRequested = isReasoningEnabled();
+    this.agent = this.buildAgent(this.reasoningRequested);
+  }
+
+  private buildAgent(withReasoning: boolean): ToolLoopAgent<never, ToolSet> {
+    const openrouter = createOpenRouter({ apiKey: this.apiKey });
 
     const tools = this.createTools();
 
-    this.agent = new ToolLoopAgent({
-      model: openrouter(this.config.model),
+    return new ToolLoopAgent({
+      // Models that cannot reason ignore the request
+      model: openrouter(this.config.model, withReasoning ? { reasoning: { effort: 'low' } } : {}),
       // Breakpoint 1: tool definitions + system prompt, identical on every call
       instructions: {
         role: 'system',
@@ -103,8 +114,15 @@ export class ChatAgent {
     return tools;
   }
 
-  async generate(messages: Message[], allAgentNames: string[], gamePhase: GamePhase): Promise<{ text: string; toolCalls?: ToolCallData[]; usage?: UsageData }> {
+  async generate(messages: Message[], allAgentNames: string[], gamePhase: GamePhase): Promise<{ text: string; toolCalls?: ToolCallData[]; usage?: UsageData; reasoning?: string }> {
     this.currentGamePhase = gamePhase;
+
+    // The reasoning setting can change between games while the agent lives on
+    if (isReasoningEnabled() !== this.reasoningRequested) {
+      this.reasoningRequested = isReasoningEnabled();
+      this.agent = this.buildAgent(this.reasoningRequested);
+    }
+
     const modelMessages = this.convertMessages(messages);
 
     // Breakpoint 2: the end of the history. An agent's view of the log only
@@ -124,12 +142,16 @@ export class ChatAgent {
     const result = await this.agent.generate({ messages: modelMessages });
     
     const toolCalls: ToolCallData[] = [];
+    const reasoning: string[] = [];
     
     // Extract tool calls from the result steps
     if (result.steps) {
       for (const step of result.steps) {
         // Check tool calls in step content
         for (const part of step.content) {
+          if (part.type === 'reasoning' && part.text.trim()) {
+            reasoning.push(part.text.trim());
+          }
           if (part.type === 'tool-call') {
             toolCalls.push({
               id: part.toolCallId || generateId(),
@@ -145,6 +167,7 @@ export class ChatAgent {
       text: this.fixNames(result.text, allAgentNames),
       toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
       usage: this.collectUsage(result.steps),
+      reasoning: reasoning.length > 0 ? reasoning.join('\n\n') : undefined,
     };
   }
 

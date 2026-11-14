@@ -180,3 +180,19 @@
 .settings-button-secondary:hover {
   background-color: #666;
 }
+
+.settings-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.settings-toggle input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  cursor: pointer;
+}

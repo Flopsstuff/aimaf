@@ -155,6 +155,7 @@ export function useChat() {
         content: result.text,
         executionTime: result.executionTime,
         usage: result.usage,
+        reasoning: result.reasoning,
         toolCalls: result.toolCalls,
       });
 
@@ -401,6 +402,7 @@ export function useChat() {
           content: result.text,
           executionTime: result.executionTime,
           usage: result.usage,
+          reasoning: result.reasoning,
           toolCalls: result.toolCalls,
         });
 
@@ -433,6 +435,7 @@ export function useChat() {
           content: result.text,
           executionTime: result.executionTime,
           usage: result.usage,
+          reasoning: result.reasoning,
           toolCalls: result.toolCalls,
         });
 
@@ -474,6 +477,7 @@ export function useChat() {
           mafia: true,
           executionTime: result.executionTime,
           usage: result.usage,
+          reasoning: result.reasoning,
         });
         // Ignore tool calls during discussion phase
       } catch (error) {
@@ -518,6 +522,7 @@ export function useChat() {
           mafia: true,
           executionTime: result.executionTime,
           usage: result.usage,
+          reasoning: result.reasoning,
           toolCalls: result.toolCalls,
         });
 
@@ -550,6 +555,7 @@ export function useChat() {
           pm: true,
           executionTime: result.executionTime,
           usage: result.usage,
+          reasoning: result.reasoning,
           toolCalls: result.toolCalls,
         });
 
@@ -582,6 +588,7 @@ export function useChat() {
           pm: true,
           executionTime: result.executionTime,
           usage: result.usage,
+          reasoning: result.reasoning,
           toolCalls: result.toolCalls,
         });
 
@@ -618,6 +625,7 @@ export function useChat() {
           content: result.text,
           executionTime: result.executionTime,
           usage: result.usage,
+          reasoning: result.reasoning,
           toolCalls: result.toolCalls,
         });
 

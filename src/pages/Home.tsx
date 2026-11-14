@@ -7,6 +7,7 @@ import { ChatInput } from '../components/ChatInput';
 import { AgentInfo } from '../components/AgentInfo';
 import { GameState } from '../types';
 import { ChatAgent } from '../agents/ChatAgent';
+import { buildGameExport, downloadGameExport } from '../utils/exportGame';
 import './Home.css';
 
 export function Home() {
@@ -34,6 +35,10 @@ export function Home() {
   const isInitial = gameState === GameState.Initial;
   const isEnded = gameState === GameState.Ended;
 
+  const exportGame = () => {
+    downloadGameExport(buildGameExport(agents, messages, gameState, gamePhase));
+  };
+
   const visibleMessages = selectedAgent ? selectedAgent.getVisibleMessages(messages) : [];
 
   return (
@@ -41,6 +46,7 @@ export function Home() {
       <Header 
         onNext={nextPhase}
         onRestart={restartGame}
+        onExport={exportGame}
         gamePhase={gamePhase}
         gameState={gameState}
         disableSettings={!isInitial}

@@ -19,7 +19,7 @@ Node.js `>=22.23.4` (`engines` in `package.json`; CI builds on Node 24). Yarn 4 
 
 There is no lint script: CRA's ESLint (`react-app`, `react-app/jest`) runs inside `start` and `build`.
 
-`src/utils/colors.test.ts` passes. `src/App.test.tsx` is the untouched CRA template and fails: Jest cannot resolve `react-router-dom` v7, and the assertion looks for "learn react" text that no longer exists. That one failure is not caused by your change.
+`src/utils/*.test.ts` pass. `src/App.test.tsx` is the untouched CRA template and fails: Jest cannot resolve `react-router-dom` v7, and the assertion looks for "learn react" text that no longer exists. That one failure is not caused by your change.
 
 ## Deployment
 
@@ -67,6 +67,10 @@ One hook owns all game state and is the only orchestrator; `Home` just wires its
 - `RoleIcon` draws the role glyph on a round badge in the agent's color; it is shown before the name in agent cards and in message headers. Do not use emoji for roles or statuses.
 - Never use an agent's raw color for text. `utils/colors.ts` computes WCAG contrast: `readableNameColor` darkens a color until it reaches 4.5:1 on the darkest message background, `inkOn` picks dark or light ink for content drawn on top of the color. `colors.test.ts` checks the whole form palette against every bubble background, so update it when adding colors or backgrounds.
 
+### Game export
+
+When the game has ended the header shows an Export button. `utils/exportGame.ts` builds one JSON document (`format: "aimaf-game"`, `version: 1`): game result, every agent with role, model and full system prompt, per-agent and total usage, and the complete message log with its `mafia` / `pm` visibility flags, tool calls, timing, usage and `reasoning`. Bump `version` when the shape changes. `reasoning` is filled only when the provider returns reasoning parts, which the app requests when the Reasoning toggle in Settings is on.
+
 ### Rules resolution: `src/utils/`
 
 - `NightActions.processActions` - the kill target is the one with the most kill actions, a matching `save` cancels the kill, and a Detective check reports mafia only for the `Mafia` role, so the Don reads as not mafia.
@@ -82,5 +86,8 @@ The UI requires at least 5 agents before the game can start (`Home.tsx`); the ex
 - `openrouter_api_key` - OpenRouter API key
 - `selected_models` - models offered in the agent creation form
 - `mafia_prompts` - edited prompt templates
+- `reasoning_enabled` - `'true'` when models are asked to reason (`reasoning: { effort: 'low' }`); `ChatAgent` rebuilds its model when the value changes
+
+For development, `.env.development.local` (git-ignored, see `.env.example`) can hold `REACT_APP_OPENROUTER_API_KEY` and `REACT_APP_DEV_MODELS`; `src/devSeed.ts` copies them into empty localStorage under `yarn start` only. Never put the key in `.env` under a `REACT_APP_` name: CRA would embed it in the production bundle.
 
 The key names are duplicated as constants in the files that use them (`useChat.ts`, `Settings.tsx`, `AgentForm.tsx`, `AgentPanel.tsx`, `MafiaPrompts.ts`); renaming one means updating all of them.

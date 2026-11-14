@@ -21,6 +21,12 @@ export function MessageBubble({ message, agentColor, agentModel, agentRole }: Me
       style={isAgent ? { borderLeftColor: agentColor } : undefined}
     >
       <MessageHeader message={message} agentColor={agentColor} agentModel={agentModel} agentRole={agentRole} />
+      {message.reasoning && (
+        <details className="message-reasoning">
+          <summary>Reasoning</summary>
+          <div className="message-reasoning-text">{message.reasoning}</div>
+        </details>
+      )}
       <div className="message-content">{message.content}</div>
     </div>
   );

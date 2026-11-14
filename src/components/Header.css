@@ -63,6 +63,14 @@
   opacity: 0.6;
 }
 
+.header-export-btn {
+  background-color: #1976d2;
+}
+
+.header-export-btn:hover:not(:disabled) {
+  background-color: #1565c0;
+}
+
 .header-btn-debug {
   background-color: #ff9800;
 }

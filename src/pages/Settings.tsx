@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Header } from '../components/Header';
 import { OpenRouterModel, MafiaRole } from '../types';
 import { DEFAULT_PROMPTS } from '../agents/MafiaPrompts';
-import { OPENROUTER_API_BASE_URL } from '../constants';
+import { OPENROUTER_API_BASE_URL, REASONING_STORAGE, isReasoningEnabled } from '../constants';
 import './Settings.css';
 
 const API_KEY_STORAGE = 'openrouter_api_key';
@@ -25,6 +25,8 @@ export function Settings() {
   const [loadingModels, setLoadingModels] = useState(false);
   const [search, setSearch] = useState('');
 
+  const [reasoning, setReasoning] = useState(isReasoningEnabled);
+
   const [prompts, setPrompts] = useState(DEFAULT_PROMPTS);
   const [promptsSaved, setPromptsSaved] = useState(false);
 
@@ -44,6 +46,11 @@ export function Settings() {
       setPrompts(JSON.parse(storedPrompts));
     }
   }, []);
+
+  const handleReasoningChange = (enabled: boolean) => {
+    setReasoning(enabled);
+    localStorage.setItem(REASONING_STORAGE, String(enabled));
+  };
 
   const handleSave = () => {
     localStorage.setItem(API_KEY_STORAGE, apiKey);
@@ -168,6 +175,24 @@ export function Settings() {
             {testing ? 'Testing...' : testResult === 'success' ? 'OK!' : testResult === 'error' ? 'Failed' : 'Test'}
           </button>
         </div>
+      </div>
+
+      <div className="settings-section">
+        <label className="settings-label">
+          Reasoning <span className="settings-hint">(applies from the next agent turn)</span>
+        </label>
+        <label className="settings-toggle">
+          <input
+            type="checkbox"
+            checked={reasoning}
+            onChange={(e) => handleReasoningChange(e.target.checked)}
+          />
+          <span>
+            Ask models to reason before answering. The reasoning is shown under each message
+            and saved in the game export. Turns get slower and cost more; models that cannot
+            reason ignore this.
+          </span>
+        </label>
       </div>
 
       <div className="settings-section">
